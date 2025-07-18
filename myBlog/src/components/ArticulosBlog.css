@@ -1,0 +1,15 @@
+.articulos{
+    padding: 16px;
+    max-width: 600px;
+    margin:auto;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+}
+
+.card{
+    border: 1px solid blue;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+    color: aqua;
+    box-shadow: 0 2px 5px rgba(9, 232, 232, 0.779);
+}
