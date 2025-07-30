@@ -1,5 +1,5 @@
 // Importación de hooks
-import { createContext, useState, useContext } from 'react';
+import { createContext, useState, useContext, useEffect } from 'react';
 
 // Se asigna un nombre a la función que crea el contexto
 const UserContext = createContext();
@@ -11,9 +11,22 @@ export function UserProvider({ children }){
 
     // Se crea una variable login que actualiza el estado de user con los datos de inicio de sesión. 
     // Guarda nombre y el valor de password como un objeto
-    const login = (name, password) => setUser({name, password});
-    // Se crea la variable logout que limpia el estado de user y lo vuelve null
-    const logout = () => setUser(null);
+
+    // Nos ayuda a guardar la información de forma temporal mientras exista la sesión. Si no hay sesión, se borra
+    useEffect(() =>{
+        const stored = localStorage.getItem('user');
+        if (stored) setUser(JSON.parse(stored));
+    }, []);
+
+    const login = (userData) => {
+        localStorage.setItem('user', JSON.stringify(userData));
+        setUser(userData)
+    }
+
+    const logout = () => {
+        localStorage.removeItem('user');
+        setUser(null);
+    }
 
     return(
         <UserContext.Provider value={{user, login, logout}}>
@@ -28,6 +41,4 @@ export function UserProvider({ children }){
 /* La siguiente línea de texto omite errores sintácticos al permitirlos como válidos */
 
 // eslint-disable-next-line react-refresh/only-export-components
-export function useUser(){
-    return useContext(UserContext);
-}
+export const useUser = () => useContext(UserContext);
