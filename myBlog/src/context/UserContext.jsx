@@ -1,40 +1,44 @@
 // Importación de hooks
 import { createContext, useState, useContext, useEffect } from 'react';
-
 // Se asigna un nombre a la función que crea el contexto
 const UserContext = createContext();
 
 // Se crea el Provider para envolver la App y compartir un estado global con children
-export function UserProvider({ children }){
+export const UserProvider = ({ children }) => {
     // Se inicializa el estado de user como nulo
     const [user, setUser] = useState(null);
+    // Se inicializa el estado de carga como true 
+    const [isLoading, setIsLoading] = useState(true);
 
-    // Se crea una variable login que actualiza el estado de user con los datos de inicio de sesión. 
-    // Guarda nombre y el valor de password como un objeto
-
-    // Nos ayuda a guardar la información de forma temporal mientras exista la sesión. Si no hay sesión, se borra
+    // Efecto que recupera el usuario de la memoria local al existir un inicio de sesión, actualizando el estado user, y modifica el estado de carga a false
+    // Permite guardar la información de forma temporal mientras exista la sesión. Si no hay sesión, se borra.
     useEffect(() =>{
-        const stored = localStorage.getItem('user');
-        if (stored) setUser(JSON.parse(stored));
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+            setUser(JSON.parse(storedUser));
+        }
+        setIsLoading(false);
     }, []);
 
+    // Función que maneja el inicio de sesión y lo actualiza en el estado 
     const login = (userData) => {
+        setUser(userData);
         localStorage.setItem('user', JSON.stringify(userData));
-        setUser(userData)
     }
 
+    // Función que maneja el cierre de sesión y lo actualiza en el estado
     const logout = () => {
-        localStorage.removeItem('user');
         setUser(null);
+        localStorage.removeItem('user');
     }
 
     return(
-        <UserContext.Provider value={{user, login, logout}}>
+        <UserContext.Provider value={{ user, login, logout, isLoading }}>
           {/* Se crea la estructura del Provider */}
             {children}
         </UserContext.Provider>
     )
-}
+};
 
 // Buena practica para evitar poner de nuevo useContext al consumir el contexto
 

@@ -1,12 +1,21 @@
-// Importación de hook, conexión y estilos
+// Importación de hooks, etiquetas bootstrap, contexto de inicio de sesión y conexión
+import React from 'react'
 import { useForm } from 'react-hook-form';
+import { Container, Form, Button, Alert } from 'react-bootstrap'
+import { useUser } from '../context/UserContext';
 import client from '../api/client';
-import './Login.css';
 
-// Creación de componente Login para conexión con back
-export default function Login() {
+// Creación de componente Login adaptado a versión estilizada
+const Login = () => {
+  // Inicialización del contexto de inicio de sesión con su parámetro de logueo 
+    const { login } = useUser();
   // Definición de acciones y estados del formulario 
-    const { register, handleSubmit, formState: {errors}} = useForm();
+    const { 
+      register, 
+      handleSubmit, 
+      formState: {errors},
+      setError,
+    } = useForm();
 
     // Definición de función que maneja la conexión del formulario con la API
     // Debe ser asincrónica para esperar una respuesta del client
@@ -14,33 +23,60 @@ export default function Login() {
         try {
           // Se espera la información de inicio de sesión de usuario
             const res = await client.post('/user/login', data);
-            // Se guarda información del id de usuario en memoria local y se informa si fue exitosa la acción
-            localStorage.setItem('_id', res.data._id);
-            alert ('Login exitoso');
-        // eslint-disable-next-line no-unused-vars
+            // Se envía la información del usuario a la función login del contexto global
+            login(res.data)
         } catch (err) {
-          // Si ocurre un error en el inicio de sesión, se informa en una alerta
-          // No se informa en consola porque sería exponer vulnerabilidades del código al usuario 
-            alert('Error en Login');
+          // Si hay un error general en la conexión, se imprime el error en consola y se envía un mensaje indicando el error en las credenciales ingresadas
+            console.error(err)
+            setError('root', {
+              message: 'Correo o contraseña incorrectos',
+            })
         }
     };
 
     return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-      {/* Campo para email, con manejo de errores */}
-      <input 
-        {...register("email", {required: true})} 
-        className={errors.email ? 'input-error':''} 
-        placeholder="Email"
-        />
-      {/* Campo para contraseña, con manejo de errores */}
-      <input 
-        {...register("password", {required: true})} 
-        className={errors.password ? 'input-error':''} 
-        type="password" 
-        placeholder="Password" />
-      {/* Botón de inicio de sesión */}
-      <button type="submit">Login</button>
-    </form>
+      <Container className="mt-5" style={{ maxWidth: '400px' }}>
+        {/* Título del Formulario */}
+        <h2 className="mb-4 text-center">Iniciar Sesión</h2>
+        <Form onSubmit={handleSubmit(onSubmit)}>
+          {/* Campo para email, con manejo de errores */}
+          <Form.Group className="mb-3">
+            <Form.Label>Correo</Form.Label>
+            <Form.Control
+              type="email"
+              placeholder="Ingresa tu correo"
+              {...register('email', { required: 'El correo es obligatorio' })}
+            />
+            {errors.email && (
+              <Form.Text className="text-danger">{errors.email.message}</Form.Text>
+            )}
+          </Form.Group>
+          {/* Campo para contraseña, con manejo de errores */}
+          <Form.Group className="mb-3">
+            <Form.Label>Contraseña</Form.Label>
+            <Form.Control
+              type="password"
+              placeholder="Tu contraseña"
+              {...register('password', { required: 'La contraseña es obligatoria' })}
+            />
+            {errors.password && (
+              <Form.Text className="text-danger">{errors.password.message}</Form.Text>
+            )}
+          </Form.Group>
+
+          {/* Alerta para errores globales */}
+          {errors.root && <Alert variant="danger">{errors.root.message}</Alert>}
+          
+          {/* Botón de inicio de sesión */}
+          <div className="d-grid">
+            <Button variant="primary" type="submit">
+              Entrar
+            </Button>
+          </div>
+        </Form>
+      </Container>
   );
 }
+
+// Exportación del componente Login
+export default Login
